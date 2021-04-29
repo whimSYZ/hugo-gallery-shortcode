@@ -6,38 +6,192 @@
     {{ $images = (.Page.Resources.Match $filter) }}
 {{ end }}
 
-{{ $hover := .Get "hover" | default "zoom" }}
+{{ $hover := .Get "hover" | default "none" }}
 
-{{ $caption := .Get "caption" | default "name" }}
+{{ $caption := .Get "caption" | default "clip" }}
 
-{{ $sort := .Get "sort" | default ".Exif.DateTime" }}
+{{ $sort := .Get "sort" | default "Name desc" }}
 
 {{ $sortOptions := (split $sort " ") }}
 
-{{ $carousel := .Get "carousel" | default "none" }}
+{{ if eq (index $sortOptions 0) "Time" }}
+    {{ $sortOptions = slice "Exif.Date" (index $sortOptions 1) }}
+{{ end }}
 
-{{ $size := .Get "size" | default 150 }}
+{{ $layout := .Get "layout" | default "waterfall" }}
+
+{{ $size := (int (.Get "size")) | default 150 }}
 
 {{ $margin := .Get "margin" | default 0 }}
 
 {{ $preview := .Get "preview" | default "blur" }}
 
-{{ range $images }}
-    {{ if eq .ResourceType "image" }}
-        
-    {{ end }}
+{{ $limitHeight := true }}
+
+{{ if eq $layout "waterfall" }}
+    {{ $limitHeight = false }}
 {{ end }}
 
-<div id="gallery-{{ . }}" class="gallery-wrapper">
-    {{ with $images }}
-    {{ range sort . $sort $sortOptions }}
-        {{ if eq .ResourceType "image" }}
-            {{ print .Exif }}
+<!-- Load lazyload, masonary and photoswipe -->
+<script src="https://unpkg.com/packery@2/dist/packery.pkgd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.3.1/dist/lazyload.min.js"></script>
 
-            <img 
-                width="{{ $size }}" height="{{ $size }}" 
-            />
-            {{ end }}
+<style>
+    .grid {
+        position: relative;
+    }
+
+
+    .item-content {
+        z-index: 1;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: white;
+    }
+
+    .item-content > img {
+        display: block;
+        border-radius: 6px;
+    }
+
+    .crop-image {
+        left: -100%;
+        right: -100%;
+        top: -100%;
+        bottom: -100%;
+        object-fit: cover;
+    }
+
+    img{
+        transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out, filter 0.25s ease-in-out;  
+    }
+
+    .item-content:hover img{
+        opacity: 0;
+
+        transform: 
+        {{ if eq $hover "zoom" }}
+            scale(1.15);
+        {{ else if eq $hover "shrink" }}
+            scale(0.85);
+        {{ end }};/* don't forget the semi-colon */
+        
+        opacity: {{ if eq $hover "fade" }}
+            0.5;
+        {{ end }};
+ 
+        filter: {{ if eq $hover "darken" }}
+            brightness(50%);  
+        {{ end }};  
+    }
+
+
+    .caption {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        color: 
+        {{ if eq $caption "clip" }}
+            transparent
+        {{ else }}
+            #FFF
+        {{ end }};
+
+        text-align: center;
+        font-size: 90%;
+        opacity: 0;
+
+        {{ if ne $caption "clip" }}
+            background: rgba(0,0,0,0.5);
         {{ end }}
+
+        {{ if eq $caption "clip" }}
+            background-clip: text;
+            -webkit-background-clip: text;
+            background-attachment: scroll;
+            
+        {{ end }}
+
+        cursor: pointer;
+        
+
+        {{ if or (eq $caption "center") (eq $caption "clip") }}
+            top: 43%;
+        {{ end }}
+
+    }
+
+    {{ if ne $caption "none"  }}
+
+    .item-content:hover .caption{
+        transition: opacity 0.25s ease-in-out;
+        opacity:1;
+    }
+        
+    {{ end }}
+
+
+</style>
+
+{{/* range $images}}
+{{ with .Exif }}
+{{ print .Tags }}
+{{ end }}
+{{ end */}}
+
+<div id="gallery-{{ . }}" class="grid">
+    {{ with $images }}
+    {{ range sort . (index $sortOptions 0) (index $sortOptions 1) }}
+    {{ if eq .ResourceType "image" }}
+    
+    {{ $scale := $size }}
+    {{ if eq $layout "mosaic" }}
+        {{ $scale = (mul $size (div ( index (seq 3 | shuffle) 0 ) 2.0) ) }}
+    {{ end }}
+
+    {{ $thumbnail := (.Resize (print $scale "x" " q50 jpg" )) }}
+
+    {{ $clip_img := (.Resize (print $scale "x25 ")).Filter (images.GaussianBlur 3) }}
+
+    {{ if eq $preview "blur" }}
+        {{ $thumbnail = $thumbnail.Filter (images.GaussianBlur 6) }}
+    {{ else if eq $preview "pixelate" }}
+        {{ $thumbnail = $thumbnail.Filter (images.Pixelate 8) }}
+    {{ else if eq $preview "one-color" }}
+        {{ $thumbnail = $thumbnail.Resize ("1x1 box png") }}
+    {{ end }}
+
+
+    {{ $caption := replaceRE "^(.+/)*" "" . | replaceRE "\\..*" "" | humanize  }}
+    <div class="grid-item" >
+        <div class="item-content">
+            <a href="{{ .RelPermalink }}">
+                <img 
+                width="{{ $scale }}" 
+                height="{{ if $limitHeight }} {{ $scale }} {{ end }}" 
+                src="{{ $thumbnail.RelPermalink }}" 
+                class="lazy crop-image"
+                data-src="{{ .RelPermalink }}"
+                />
+                <div class="caption" style="background-image: url({{ $clip_img.RelPermalink }}) ">
+                    {{ $caption }}
+                </div>
+            </a>
+        </div>
+    </div>
+    {{ end }}
+    {{ end }}
     {{ end }}
 </div>
+
+
+<script>
+    var pckry = new Packery('.grid', {
+        itemSelector: '.grid-item',
+    });
+
+    var lazyLoadInstance = new LazyLoad({});
+</script>
