@@ -2,6 +2,7 @@
 A hugo shortcode to display gallery.
 
 # Features
+
 + Position images in square, waterfall and mosaic layout
 + Sort images by time in **EXIF**
 + Lazyload
