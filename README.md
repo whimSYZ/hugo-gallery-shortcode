@@ -1,5 +1,5 @@
 # hugo-gallery
-A hugo shortcode to display gallery.
+A hugo shortcode to display gallery. [Demo](https://yuanzheshi.com/gallery/)
 
 # Features
 
@@ -44,6 +44,7 @@ posts/
 **Note** make sure you have the `index.mod`.
 
 # Demo
+See [demo](https://yuanzheshi.com/gallery/)
 
 
 # To do
