@@ -47,7 +47,8 @@ posts/
 See [demo](https://yuanzheshi.com/gallery/)
 
 
-# To do
+# Todo
 - Add Photoswipe
 - Capability to separate images into time intervals
 - Parse images in folder into a collection
+- Bugs on other themes
