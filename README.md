@@ -41,7 +41,7 @@ posts/
         1.jpg
         2.jpg
 ```
-**Note** make sure you have the `index.mod`.
+**Note** It is important to have `index.mod`.
 
 # Demo
 See [demo](https://yuanzheshi.com/gallery/)
