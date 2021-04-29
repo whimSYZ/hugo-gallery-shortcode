@@ -13,13 +13,14 @@ A hugo shortcode to display gallery.
 - [Packery](https://github.com/metafizzy/packery)
 
 ## Parameter options
-- sort
-    - sss
-- size
-- hover
-- preview
-- layout
-- caption
+| Parameter | Options                          | Default   |
+|-----------|----------------------------------|-----------|
+| sort      | - Name \| Time - asec \| desc    | Time desc |
+| size      |                                  | 150       |
+| hover     | zoom \| shrink \| fade \| darken | none      |
+| preview   | blur \| pixelate \| one-color    | blur      |
+| layout    | square \| waterfall \| mosaic    | waterfall |
+| caption   | top \| center \| bottom \| clip  | clip      |
 
 
 # Usage
