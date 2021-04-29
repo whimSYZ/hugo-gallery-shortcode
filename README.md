@@ -11,7 +11,15 @@ Add the following line in the file you want to display the gallery:
 {{< gallery sort="Time desc" size="170" hover="zoom" preview="blur" layout="waterfall" caption="clip" >}}
 ```
 
-Make sure the images are added as [Page Resources](https://gohugo.io/content-management/page-resources/)
+Make sure the images are added as [Page Resources](https://gohugo.io/content-management/page-resources/). Particularly, have the following file structure:
+```
+posts/
+    index.md
+    images/
+        1.jpg
+        2.jpg
+```
+**Note** make sure you have the `index.mod`.
 
 # Demo
 
