@@ -1,0 +1,43 @@
+{{ $images := .Page.Resources.ByType "image" }}
+
+{{ $filter := .Get "filter" | default false }}
+
+{{ if $filter }}
+    {{ $images = (.Page.Resources.Match $filter) }}
+{{ end }}
+
+{{ $hover := .Get "hover" | default "zoom" }}
+
+{{ $caption := .Get "caption" | default "name" }}
+
+{{ $sort := .Get "sort" | default ".Exif.DateTime" }}
+
+{{ $sortOptions := (split $sort " ") }}
+
+{{ $carousel := .Get "carousel" | default "none" }}
+
+{{ $size := .Get "size" | default 150 }}
+
+{{ $margin := .Get "margin" | default 0 }}
+
+{{ $preview := .Get "preview" | default "blur" }}
+
+{{ range $images }}
+    {{ if eq .ResourceType "image" }}
+        
+    {{ end }}
+{{ end }}
+
+<div id="gallery-{{ . }}" class="gallery-wrapper">
+    {{ with $images }}
+    {{ range sort . $sort $sortOptions }}
+        {{ if eq .ResourceType "image" }}
+            {{ print .Exif }}
+
+            <img 
+                width="{{ $size }}" height="{{ $size }}" 
+            />
+            {{ end }}
+        {{ end }}
+    {{ end }}
+</div>
