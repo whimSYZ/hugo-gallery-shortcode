@@ -34,21 +34,22 @@
 
 <!-- Load lazyload, masonary and photoswipe -->
 <script src="https://unpkg.com/packery@2/dist/packery.pkgd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.3.1/dist/lazyload.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js"></script>
 
 <style>
     .grid {
-        position: relative;
+        position: block;
+        height: 100%
     }
-
 
     .item-content {
         z-index: 1;
-        position: relative;
+        position: block;
         width: 100%;
         height: 100%;
         overflow: hidden;
-        background-color: white;
+        margin-top: -16px;
+        margin-bottom: -16px;
     }
 
     .item-content > img {
@@ -112,7 +113,6 @@
             background-clip: text;
             -webkit-background-clip: text;
             background-attachment: scroll;
-            
         {{ end }}
 
         cursor: pointer;
@@ -142,7 +142,7 @@
 {{ end }}
 {{ end */}}
 
-<div id="gallery-{{ . }}" class="grid">
+<div id="gallery-{{ .Page.File.Dir }}" class="grid" >
     {{ with $images }}
     {{ range sort . (index $sortOptions 0) (index $sortOptions 1) }}
     {{ if eq .ResourceType "image" }}
@@ -152,29 +152,30 @@
         {{ $scale = (mul $size (div ( index (seq 3 | shuffle) 0 ) 2.0) ) }}
     {{ end }}
 
-    {{ $thumbnail := (.Resize (print $scale "x" " q50 jpg" )) }}
+    {{ $origional_thumbnail := (.Resize (print (mul $scale 2) "x" " q100 jpg" )) }}
+    {{ $thumbnail := $origional_thumbnail }}
+    {{ $thumbnail := $thumbnail.Resize (print (div $scale 3) "x" " q50 jpg" ) }}
 
-    {{ $clip_img := (.Resize (print $scale "x25 ")).Filter (images.GaussianBlur 3) }}
+    {{ $clip_img := (.Resize (print $scale "x25 ")).Filter (images.GaussianBlur 5) }}
 
     {{ if eq $preview "blur" }}
-        {{ $thumbnail = $thumbnail.Filter (images.GaussianBlur 6) }}
+        {{ $thumbnail = $thumbnail.Filter (images.GaussianBlur 2) }}
     {{ else if eq $preview "pixelate" }}
         {{ $thumbnail = $thumbnail.Filter (images.Pixelate 8) }}
-    {{ else if eq $preview "one-color" }}
+    {{ else if eq $preview "monotone" }}
         {{ $thumbnail = $thumbnail.Resize ("1x1 box png") }}
     {{ end }}
 
-
     {{ $caption := replaceRE "^(.+/)*" "" . | replaceRE "\\..*" "" | humanize  }}
-    <div class="grid-item" >
+    <div class="grid-item">
         <div class="item-content">
-            <a href="{{ .RelPermalink }}">
+            <a href="{{ .RelPermalink }}" >
                 <img 
                 width="{{ $scale }}" 
                 height="{{ if $limitHeight }} {{ $scale }} {{ end }}" 
                 src="{{ $thumbnail.RelPermalink }}" 
                 class="lazy crop-image"
-                data-src="{{ .RelPermalink }}"
+                data-src="{{ $origional_thumbnail.RelPermalink }}"
                 />
                 <div class="caption" style="background-image: url({{ $clip_img.RelPermalink }}) ">
                     {{ $caption }}
